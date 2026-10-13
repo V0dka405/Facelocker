@@ -1,0 +1,61 @@
+services:
+  # ----------------------------
+  # 1. Backend Service
+  # ----------------------------
+  backend:
+    build: ./backend        # 👈 ชี้ไปที่โฟลเดอร์ backend
+    container_name: facelocker_backend
+    ports:
+      - "8001:8001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/facelocker
+      - MQTT_HOST=mqtt://mosquitto:1883
+    depends_on:
+      - mongo
+      - mosquitto
+    restart: unless-stopped
+
+  # ----------------------------
+  # 2. Frontend Service
+  # ----------------------------
+  frontend:
+    build: ./frontend       # 👈 ชี้ไปที่โฟลเดอร์ frontend
+    container_name: facelocker_frontend
+    ports:
+      - "3000:3000"
+    stdin_open: true        # จำเป็นสำหรับ React ใน Docker ให้ไม่หลุด
+    tty: true
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ----------------------------
+  # 3. MongoDB
+  # ----------------------------
+  mongo:
+    image: mongo:5.0
+    container_name: facelocker_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  # ----------------------------
+  # 4. MQTT (Mosquitto)
+  # ----------------------------
+  mosquitto:
+    build: ./mosquitto
+    container_name: facelocker_mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  mosquitto_data:
+  mosquitto_log:

@@ -1,0 +1,120 @@
+/* นำเข้าฟอนต์ Kanit และ Inter เพื่อความทันสมัย */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kanit:wght@300;400;500;600&display=swap');
+
+/* ตั้งค่าพื้นฐานทั้งแอปให้เป็นสีดำ */
+body {
+  background-color: #000000; /* พื้นหลังดำสนิท */
+  color: #ffffff; /* ตัวหนังสือสีขาว */
+  font-family: 'Kanit', 'Inter', sans-serif; /* ใช้ฟอนต์สวยๆ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* การ์ดพื้นหลัง (ใช้กับ Login, Signup, EditProfile) */
+.container {
+  width: 100%;
+  max-width: 420px; /* ขนาดมาตรฐาน ไม่กว้างเกินไป */
+  padding: 40px;
+  background-color: #1C1C1E; /* สีเทาเข้มแบบ Apple Dark Mode */
+  border-radius: 32px; /* มุมโค้งมนมาก ให้ดูนุ่มนวล */
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6); /* เงาฟุ้งๆ */
+  text-align: center;
+  border: 1px solid #333; /* ขอบจางๆ */
+  margin: 20px;
+  box-sizing: border-box;
+}
+
+/* Class สำหรับขยายหน้า Dashboard (ถ้ามีการเรียกใช้) */
+.container.wide {
+  max-width: 1000px;
+  width: 95%;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #ffffff;
+}
+
+.input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #aaaaaa; /* สีเทาอ่อน อ่านสบายตา */
+}
+
+/* ช่องกรอกข้อมูลแบบ Modern */
+input {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 16px; /* มุมโค้ง */
+  border: none;
+  background-color: #2C2C2E; /* พื้นหลัง Input สีเทา */
+  color: white;
+  font-size: 16px;
+  outline: none; /* เอาเส้นขอบเวลาคลิกออก */
+  transition: box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+input:focus {
+  box-shadow: 0 0 0 2px #FFD700; /* เวลาพิมพ์ให้มีแสงสีทอง */
+}
+
+/* ปุ่มหลัก (สีทอง) */
+.btn-confirm {
+  background-color: #FFD700;
+  color: #000000;
+  font-weight: bold;
+  border: none;
+  padding: 16px 0;
+  width: 100%;
+  border-radius: 16px;
+  font-size: 18px;
+  margin-top: 30px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.2s;
+}
+
+.btn-confirm:hover {
+  background-color: #FFC107;
+  transform: scale(1.02); /* ขยายเล็กน้อยเมื่อเอาเมาส์ชี้ */
+}
+
+/* ลิงก์ด้านล่าง */
+.link-text {
+  margin-top: 25px;
+  color: #888;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.link-text:hover {
+  color: #FFD700;
+  text-decoration: underline;
+}
+
+/* ปุ่มสีแดงสำหรับ Logout หรือ ยกเลิก */
+.btn-danger {
+  background-color: transparent;
+  color: #FF453A; /* แดงสว่างแบบ iOS */
+  border: 1px solid #4a1a1a;
+  margin-top: 15px;
+}
+
+.btn-danger:hover {
+  background-color: #3a1a1a;
+  color: #ff6b61;
+}
