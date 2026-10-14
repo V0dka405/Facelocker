@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 // ----------------------------------------------------------------------
 // 1. CustomModal Component
@@ -89,14 +90,14 @@ function EditProfile() {
 
     const fetchUserData = async (username) => {
         try {
-            const res = await axios.get(`http://localhost:8001/user-profile/${username}`);
+            const res = await axios.get(`${API_URL}/user-profile/${username}`);
             if (res.data.success) {
-                const data = res.data.user;
+                const data = res.data.user || {};
                 setFormData({
-                    username: data.username,
-                    name: data.name,
-                    lastname: data.lastname,
-                    phone: data.phone,
+                    username: data.username || '',
+                    name: data.name || '',
+                    lastname: data.lastname || '',
+                    phone: data.phone || '',
                     password: '' 
                 });
             }
@@ -121,7 +122,7 @@ function EditProfile() {
         }
 
         try {
-            const res = await axios.post(`http://localhost:8001/update-profile/${currentUsername}`, formData);
+            const res = await axios.post(`${API_URL}/update-profile/${currentUsername}`, formData);
             if (res.data.success) {
                 if (currentUsername !== formData.username) {
                     localStorage.setItem('currentUser', formData.username);

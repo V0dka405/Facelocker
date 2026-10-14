@@ -1,17 +1,28 @@
 /* นำเข้าฟอนต์ Kanit และ Inter เพื่อความทันสมัย */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kanit:wght@300;400;500;600&display=swap');
 
-/* ตั้งค่าพื้นฐานทั้งแอปให้เป็นสีดำ */
+/* ตั้งค่าพื้นฐานทั้งแอปให้เต็มจอและเป็นสีดำ */
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   background-color: #000000; /* พื้นหลังดำสนิท */
   color: #ffffff; /* ตัวหนังสือสีขาว */
   font-family: 'Kanit', 'Inter', sans-serif; /* ใช้ฟอนต์สวยๆ */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
   margin: 0;
   -webkit-font-smoothing: antialiased;
+}
+
+.App {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* การ์ดพื้นหลัง (ใช้กับ Login, Signup, EditProfile) */
@@ -24,8 +35,16 @@ body {
   box-shadow: 0 20px 40px rgba(0,0,0,0.6); /* เงาฟุ้งๆ */
   text-align: center;
   border: 1px solid #333; /* ขอบจางๆ */
-  margin: 20px;
+  margin: auto;
   box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 28px 20px;
+    border-radius: 24px;
+    margin: 20px auto;
+  }
 }
 
 /* Class สำหรับขยายหน้า Dashboard (ถ้ามีการเรียกใช้) */

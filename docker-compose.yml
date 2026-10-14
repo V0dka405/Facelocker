@@ -8,10 +8,10 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/facelocker
+      - MONGO_URI=${MONGO_URI}
       - MQTT_HOST=mqtt://mosquitto:1883
+      - PROMPTPAY_ID=${PROMPTPAY_ID:-0623284172}
     depends_on:
-      - mongo
       - mosquitto
     restart: unless-stopped
 
@@ -30,16 +30,16 @@ services:
     restart: unless-stopped
 
   # ----------------------------
-  # 3. MongoDB
+  # 3. MongoDB (Local - ปิดไว้เพราะย้ายไปใช้ MongoDB Atlas)
   # ----------------------------
-  mongo:
-    image: mongo:5.0
-    container_name: facelocker_mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    restart: unless-stopped
+  # mongo:
+  #   image: mongo:5.0
+  #   container_name: facelocker_mongo
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+  #   restart: unless-stopped
 
   # ----------------------------
   # 4. MQTT (Mosquitto)
@@ -56,6 +56,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  mongo_data:
+  # mongo_data:
   mosquitto_data:
   mosquitto_log:

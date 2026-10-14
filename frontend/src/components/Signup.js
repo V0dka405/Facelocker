@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 // ----------------------------------------------------------------------
 // 1. CustomModal Component (ใช้แทน alert)
@@ -91,7 +92,7 @@ function Signup() {
     try {
       // ส่งเฉพาะ field ที่ backend ต้องการ (ไม่ส่ง confirmPassword)
       const { confirmPassword, ...payload } = formData;
-      const response = await axios.post('http://localhost:8001/register', payload);
+      const response = await axios.post(`${API_URL}/register`, payload);
       
       if (response.data.success) {
         // สมัครเสร็จ -> ส่งไปหน้าสแกนหน้า

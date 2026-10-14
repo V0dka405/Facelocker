@@ -3,6 +3,7 @@ import Webcam from 'react-webcam';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
+import { API_URL } from '../config';
 
 function ReturnFaceScan() {
     const webcamRef = useRef(null);
@@ -10,9 +11,8 @@ function ReturnFaceScan() {
     
     const { id: lockerId } = useParams(); 
     const location = useLocation();
-    const username = location.state?.username;
-
     const navigate = useNavigate();
+    const username = location.state?.username || localStorage.getItem('currentUser');
 
     const [modelsLoaded, setModelsLoaded] = useState(false);
     const [statusText, setStatusText] = useState("กำลังโหลด AI...");
@@ -54,7 +54,7 @@ function ReturnFaceScan() {
         setStatusText("⚡ พบใบหน้า! กำลังยืนยันและคืนตู้...");
 
         try {
-            const res = await axios.post('http://localhost:8001/return-face-verify', {
+            const res = await axios.post(`${API_URL}/return-face-verify`, {
                 lockerId: parseInt(lockerId),
                 faceDescriptor: descriptor,
                 username: username 
@@ -105,7 +105,7 @@ function ReturnFaceScan() {
                 const detections = await faceapi
                     .detectAllFaces(
                         video, 
-                        new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.8 })
+                        new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.5 })
                     )
                     .withFaceLandmarks()
                     .withFaceDescriptors();
@@ -135,7 +135,19 @@ function ReturnFaceScan() {
 
 
     if (!username) {
-        return <div className="container"><h1>Error: No Username Data</h1></div>;
+        return (
+            <div className="container" style={{ textAlign: 'center', marginTop: '40px' }}>
+                <h2>ไม่พบข้อมูลผู้ใช้งาน</h2>
+                <p>กรุณาเข้าสู่ระบบก่อนทำการปลดล็อกตู้</p>
+                <button 
+                    onClick={() => navigate('/dashboard')}
+                    className="btn-confirm"
+                    style={{ marginTop: '20px' }}
+                >
+                    กลับสู่หน้าหลัก
+                </button>
+            </div>
+        );
     }
 
     return (

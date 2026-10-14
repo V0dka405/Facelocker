@@ -3,6 +3,7 @@ import Webcam from 'react-webcam';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
+import { API_URL } from '../config';
 
 function SignupFace() {
   const webcamRef = useRef(null);
@@ -77,19 +78,19 @@ function SignupFace() {
   const handleConfirm = useCallback(async (descriptor) => {
     if (!descriptor) {
       if (isMounted.current) setStatusMessage("❌ ไม่พบข้อมูลใบหน้า");
+      isCaptured.current = false;
+      setIsCapturedState(false);
       return;
     }
     
-    // Stop the detection loop immediately
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    
     try {
-      const res = await axios.post("http://localhost:8001/register-face", {
+      const res = await axios.post(`${API_URL}/register-face`, {
         username: username,
         faceDescriptor: descriptor
       });
 
       if (res.data.success) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
         if (isMounted.current) {
           setStatusMessage("✅ บันทึกใบหน้าสำเร็จ!");
           setTimeout(() => navigate("/"), 1000);
@@ -123,7 +124,7 @@ function SignupFace() {
     if (isCaptured.current) return;
 
     intervalRef.current = setInterval(async () => {
-      if (isCaptured.current) return; 
+      if (!modelsLoaded || isCaptured.current) return; 
 
       if (
         !isMounted.current ||
@@ -196,8 +197,21 @@ function SignupFace() {
     }, 500);
   };
 
-  if (!username)
-    return <div style={{ background: '#000', color: '#fff', height: '100vh', padding: '20px' }}><h1>Error: No Username</h1></div>;
+  if (!username) {
+    return (
+      <div style={{ background: '#000', color: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', textAlign: 'center' }}>
+        <h2 style={{ marginBottom: '15px' }}>ไม่พบข้อมูลผู้ใช้งาน</h2>
+        <p style={{ color: '#aaa', marginBottom: '20px' }}>กรุณากรอกข้อมูลสมัครสมาชิกก่อนลงทะเบียนใบหน้า</p>
+        <button 
+          onClick={() => navigate('/signup')}
+          className="btn-confirm"
+          style={{ width: '220px' }}
+        >
+          กลับไปหน้าสมัคร
+        </button>
+      </div>
+    );
+  }
   
   // Color logic for border
   const primaryBorderColor = isCapturedState ? '#4CAF50' : faceDetected ? '#00FF00' : '#FFD700'; 

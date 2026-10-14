@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 // ----------------------------------------------------------------------
 // 1. CustomModal Component (นำมาจาก Dashboard เพื่อความสอดคล้อง)
@@ -70,7 +71,7 @@ function UserProfile() {
 
     const fetchUserData = async (username) => {
         try {
-            const res = await axios.get(`http://localhost:8001/user-profile/${username}`);
+            const res = await axios.get(`${API_URL}/user-profile/${username}`);
             if (res.data.success) {
                 setUserData(res.data.user);
             }
@@ -114,7 +115,7 @@ function UserProfile() {
             <div style={styles.card}>
                 <div style={styles.header}>
                     <div style={styles.avatar}>
-                        {userData.username.charAt(0).toUpperCase()}
+                        {(userData.username || '?').charAt(0).toUpperCase()}
                     </div>
                     <h1 style={styles.title}>ข้อมูลส่วนตัว</h1>
                     <p style={styles.subtitle}>จัดการบัญชีของคุณ</p>

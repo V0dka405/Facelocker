@@ -1,0 +1,374 @@
+/* Dashboard.css - Responsive styles for Locker Service */
+
+.dashboard-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #000000;
+  font-family: 'Kanit', 'Inter', sans-serif;
+  color: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.dashboard-content {
+  width: 100%;
+  max-width: 1200px;
+  padding: 40px 24px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+  border-bottom: 1px solid #222;
+  padding-bottom: 20px;
+  gap: 15px;
+}
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(90deg, #ffffff, #aaaaaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dashboard-welcome {
+  font-size: 15px;
+  color: #777777;
+  margin: 4px 0 0 0;
+}
+
+.dashboard-profile-btn {
+  background-color: #1C1C1E;
+  color: #ffffff;
+  border: 1px solid #333333;
+  border-radius: 30px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dashboard-profile-btn:hover {
+  background-color: #2C2C2E;
+  border-color: #555555;
+}
+
+/* Active Locker Banner */
+.dashboard-active-card {
+  background: linear-gradient(135deg, #1C1C1E 0%, #252525 100%);
+  border-radius: 24px;
+  padding: 30px;
+  margin-bottom: 40px;
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.active-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.active-label {
+  color: #FFD700;
+  font-size: 17px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-number {
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.return-button {
+  background-color: #DC3545;
+  color: #ffffff;
+  border: none;
+  border-radius: 18px;
+  padding: 14px 32px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(220, 53, 69, 0.35);
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.return-button:hover {
+  background-color: #bd2130;
+  transform: scale(1.02);
+}
+
+/* Locker Grid Layout */
+.lockers-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Locker Card */
+.locker-card {
+  background-color: #1C1C1E;
+  border-radius: 20px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 160px;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #333333;
+}
+
+.locker-card.available {
+  border: 1px solid #3a3a3c;
+}
+
+.locker-card.available:hover {
+  transform: translateY(-3px);
+  border-color: #28A745;
+  box-shadow: 0 8px 20px rgba(40, 167, 69, 0.15);
+}
+
+.locker-card.occupied {
+  opacity: 0.65;
+  border: 1px solid #282828;
+}
+
+.locker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.locker-id {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.available {
+  background-color: #28A745;
+  box-shadow: 0 0 10px #28A745;
+}
+
+.status-dot.occupied {
+  background-color: #DC3545;
+}
+
+.locker-body {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.status-text-available {
+  color: #28A745;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.status-text-occupied {
+  color: #DC3545;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.owner-text {
+  color: #888888;
+  font-size: 12px;
+  margin: 0;
+  word-break: break-all;
+}
+
+.book-button {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: none;
+  background-color: #ffffff;
+  color: #000000;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+
+.book-button:hover {
+  background-color: #FFD700;
+  transform: scale(1.02);
+}
+
+.book-button:active {
+  transform: scale(0.98);
+}
+
+/* ------------------------------------------------------------- */
+/* Responsive Media Queries */
+/* ------------------------------------------------------------- */
+
+/* Tablet (Medium Screens: 768px - 1024px) */
+@media (max-width: 1024px) {
+  .lockers-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .dashboard-content {
+    padding: 30px 20px;
+  }
+}
+
+/* Mobile & Small Screens (< 768px) */
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 20px 16px;
+  }
+
+  .dashboard-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+
+  .dashboard-title {
+    font-size: 22px;
+  }
+
+  .dashboard-welcome {
+    font-size: 13px;
+  }
+
+  .dashboard-profile-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 20px;
+  }
+
+  .dashboard-active-card {
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .active-info {
+    align-items: center;
+  }
+
+  .active-number {
+    font-size: 44px;
+  }
+
+  .return-button {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+
+  /* 2 คอลัมน์บนมือถือ เรียงเป็นระเบียบสวยงาม */
+  .lockers-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .locker-card {
+    padding: 16px 14px;
+    border-radius: 16px;
+    min-height: 135px;
+  }
+
+  .locker-id {
+    font-size: 26px;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .locker-body {
+    margin-top: 10px;
+    gap: 6px;
+  }
+
+  .status-text-available,
+  .status-text-occupied {
+    font-size: 13px;
+  }
+
+  .owner-text {
+    font-size: 11px;
+  }
+
+  .book-button {
+    padding: 10px 8px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+}
+
+/* Very Small Mobile (< 380px) */
+@media (max-width: 380px) {
+  .dashboard-content {
+    padding: 14px 10px;
+  }
+
+  .lockers-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .locker-card {
+    padding: 14px 10px;
+    min-height: 125px;
+  }
+
+  .locker-id {
+    font-size: 22px;
+  }
+
+  .book-button {
+    font-size: 12px;
+    padding: 9px 6px;
+  }
+}

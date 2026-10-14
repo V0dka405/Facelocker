@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
-// ✅ กำหนด API URL กลาง: สำหรับ Docker Browser ต้องชี้ไปที่ Host Port 8001
-const API_URL = 'http://localhost:8001';
+import { API_URL } from '../config';
 
 
 // ----------------------------------------------------------------------

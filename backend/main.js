@@ -6,8 +6,22 @@ const mqtt = require('mqtt');
 const QRCode = require('qrcode');
 const generatePayload = require('promptpay-qr'); // ✅ 1. เพิ่มบรรทัดนี้
 
+const path = require('path');
+
+// โหลดตัวแปรสภาพแวดล้อมจากไฟล์ .env อัตโนมัติ (ปลอดภัย ไม่หลุดขึ้น Git)
+try {
+    process.loadEnvFile();
+} catch (e) {
+    try {
+        process.loadEnvFile(path.resolve(__dirname, '../.env'));
+    } catch (err) {}
+}
+
 const app = express();
-const PORT = 8001;
+const PORT = process.env.PORT || 8001;
+const MQTT_HOST = process.env.MQTT_HOST || 'mqtt://127.0.0.1:1883';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/facelocker';
+const MATCH_THRESHOLD = parseFloat(process.env.MATCH_THRESHOLD) || 0.55;
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -15,19 +29,19 @@ app.use(express.json({ limit: '50mb' }));
 // ----------------------------------------
 // 1. ตั้งค่า MQTT และ Database
 // ----------------------------------------
-const mqttClient = mqtt.connect('mqtt://mosquitto:1883');
+const mqttClient = mqtt.connect(MQTT_HOST, { reconnectPeriod: 10000 });
 
 mqttClient.on('connect', () => {
-    console.log('✅ Connected to MQTT Broker');
+    console.log('✅ Connected to MQTT Broker:', MQTT_HOST);
 });
 
 mqttClient.on('error', (err) => {
     console.error('❌ MQTT Error:', err.message);
 });
 
-mongoose.connect('mongodb://mongo:27017/facelocker')
+mongoose.connect(MONGO_URI)
     .then(() => {
-        console.log('✅ Connected to MongoDB');
+        console.log('✅ Connected to MongoDB:', MONGO_URI);
         initLockers();
     })
     .catch((err) => console.error('❌ Connection Error:', err));
@@ -53,12 +67,16 @@ const lockerSchema = new mongoose.Schema({
 const Locker = mongoose.model('Locker', lockerSchema);
 
 async function initLockers() {
-    const count = await Locker.countDocuments();
-    if (count === 0) {
-        for (let i = 1; i <= 12; i++) {
-            await Locker.create({ id: i });
+    try {
+        const count = await Locker.countDocuments();
+        if (count === 0) {
+            for (let i = 1; i <= 12; i++) {
+                await Locker.create({ id: i });
+            }
+            console.log('✅ สร้างตู้ล็อกเกอร์เรียบร้อย');
         }
-        console.log('✅ สร้างตู้ล็อกเกอร์เรียบร้อย');
+    } catch (err) {
+        console.error('❌ Error initializing lockers:', err);
     }
 }
 
@@ -79,13 +97,13 @@ function getEuclideanDistance(face1, face2) {
 app.get('/', (req, res) => res.send('✅ Server is Ready!'));
 
 // ==========================================
-// 🟢 API สร้าง QR Code (แก้เบอร์ตรงนี้)
+// 🟢 API สร้าง QR Code
 // ==========================================
 app.post('/generate-qr', async (req, res) => {
     try {
-        // 👇👇👇 ใส่เบอร์โทร หรือ เลขบัตรประชาชน ตรงนี้ 👇👇👇
-        const mobileNumber = '062324172'; 
-        const amount = 10.00; // จำนวนเงิน
+        // เบอร์โทรศัพท์ PromptPay ของระบบ (10 หลัก)
+        const mobileNumber = process.env.PROMPTPAY_ID || req.body?.mobileNumber || '0623284172'; 
+        const amount = Number(req.body?.amount) || 10.00; // จำนวนเงิน
 
         // สร้าง Payload พร้อมเพย์จากเบอร์โทร
         const payload = generatePayload(mobileNumber, { amount });
@@ -100,7 +118,7 @@ app.post('/generate-qr', async (req, res) => {
         });
     } catch (error) {
         console.error("QR Error:", error);
-        res.status(500).json({ success: false, message: "สร้าง QR ไม่สำเร็จ" });
+        res.status(500).json({ success: false, message: "สร้าง QR ไม่สำเร็จ: " + error.message });
     }
 });
 // ==========================================
@@ -232,17 +250,18 @@ app.get('/lockers', async (req, res) => {
 app.post('/book', async (req, res) => {
     try {
         const { lockerId, username } = req.body;
+        const numericLockerId = Number(lockerId);
 
         // Atomic operation: find + update ในคำสั่งเดียว ป้องกัน race condition
         const locker = await Locker.findOneAndUpdate(
-            { id: lockerId, status: 'available' },
+            { id: numericLockerId, status: 'available' },
             { $set: { status: 'busy', owner: username } },
             { new: true }
         );
 
         if (!locker) {
             // ตรวจสอบว่าตู้มีอยู่จริงหรือไม่
-            const exists = await Locker.findOne({ id: lockerId });
+            const exists = await Locker.findOne({ id: numericLockerId });
             if (!exists) {
                 return res.json({ success: false, message: 'ไม่พบตู้ล็อกเกอร์' });
             }
@@ -251,12 +270,12 @@ app.post('/book', async (req, res) => {
 
         if (mqttClient.connected) {
             const payload = JSON.stringify({
-                id: lockerId,
+                id: numericLockerId,
                 username: username,
                 action: 'BOOK'
             });
             mqttClient.publish('locker/control', payload);
-            console.log(`📡 MQTT: สั่งเปิดตู้ ${lockerId} โดย ${username} (Booking)`);
+            console.log(`📡 MQTT: สั่งเปิดตู้ ${numericLockerId} โดย ${username} (Booking)`);
         }
 
         res.json({ success: true });
@@ -268,14 +287,15 @@ app.post('/book', async (req, res) => {
 
 app.post('/return-face-verify', async (req, res) => {
     const { lockerId, faceDescriptor, username } = req.body;
+    const numericLockerId = Number(lockerId);
 
-    if (!faceDescriptor || faceDescriptor.length !== 128 || !lockerId || !username) {
+    if (!faceDescriptor || faceDescriptor.length !== 128 || !numericLockerId || !username) {
         return res.status(400).json({ success: false, message: 'ข้อมูลไม่สมบูรณ์' });
     }
 
     try {
         const user = await User.findOne({ username });
-        const locker = await Locker.findOne({ id: lockerId });
+        const locker = await Locker.findOne({ id: numericLockerId });
 
         if (!user || !locker) {
             return res.json({ success: false, message: 'ข้อมูลไม่ถูกต้อง' });
@@ -283,29 +303,28 @@ app.post('/return-face-verify', async (req, res) => {
         if (locker.owner !== username) {
             return res.json({ success: false, message: 'คุณไม่ใช่เจ้าของตู้' });
         }
-        if (!user.faceDescriptor) {
-            return res.json({ success: false, message: 'ไม่มีข้อมูลใบหน้า' });
+        if (!user.faceDescriptor || !Array.isArray(user.faceDescriptor) || user.faceDescriptor.length !== 128) {
+            return res.json({ success: false, message: 'ไม่มีข้อมูลใบหน้าในระบบ' });
         }
 
         const distance = getEuclideanDistance(faceDescriptor, user.faceDescriptor);
-        const MATCH_THRESHOLD = 0.4;
 
-        console.log(`[Verify] User: ${username}, Distance: ${distance.toFixed(4)}`);
+        console.log(`[Verify] User: ${username}, Distance: ${distance.toFixed(4)}, Threshold: ${MATCH_THRESHOLD}`);
 
         if (distance > MATCH_THRESHOLD) {
             return res.json({ success: false, message: 'ใบหน้าไม่ชัดเจน หรือไม่เหมือนตัวจริง' });
         }
 
-        await Locker.updateOne({ id: lockerId }, { status: 'available', owner: null });
+        await Locker.updateOne({ id: numericLockerId }, { status: 'available', owner: null });
 
         if (mqttClient.connected) {
             const payload = JSON.stringify({
-                id: lockerId,
+                id: numericLockerId,
                 username: username,
                 action: 'RETURN'
             });
             mqttClient.publish('locker/control', payload);
-            console.log(`📡 MQTT: สั่งเปิดตู้ ${lockerId} โดย ${username} (Return)`);
+            console.log(`📡 MQTT: สั่งเปิดตู้ ${numericLockerId} โดย ${username} (Return)`);
         }
 
         return res.json({ success: true, message: 'ยืนยันและคืนตู้สำเร็จ' });
@@ -323,12 +342,12 @@ app.post('/login-face', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid face descriptor' });
         }
 
-        const allUsers = await User.find({ faceDescriptor: { $exists: true, $ne: null, $not: { $size: 0 } } }).select('-password');
+        const allUsers = await User.find({ "faceDescriptor.0": { $exists: true } }).select('-password');
         let bestMatch = null;
-        const MIN_DISTANCE_THRESHOLD = 0.4;
-        let minDistance = MIN_DISTANCE_THRESHOLD;
+        let minDistance = MATCH_THRESHOLD;
 
         for (const user of allUsers) {
+            if (!Array.isArray(user.faceDescriptor) || user.faceDescriptor.length !== 128) continue;
             const distance = getEuclideanDistance(faceDescriptor, user.faceDescriptor);
             if (distance < minDistance) {
                 minDistance = distance;
@@ -337,12 +356,13 @@ app.post('/login-face', async (req, res) => {
         }
 
         if (bestMatch) {
-            res.json({ success: true, message: `ยินดีต้อนรับคุณ ${bestMatch.name}`, user: bestMatch });
+            console.log(`[Login Face] Match found: ${bestMatch.username}, Distance: ${minDistance.toFixed(4)}`);
+            res.json({ success: true, message: `ยินดีต้อนรับคุณ ${bestMatch.name || bestMatch.username}`, user: bestMatch });
         } else {
             res.json({ success: false, message: 'ไม่พบข้อมูลใบหน้า หรือหน้าไม่ชัดเจน' });
         }
     } catch (error) {
-        console.error(error);
+        console.error('Login face error:', error);
         res.json({ success: false, message: 'เกิดข้อผิดพลาดภายใน Server' });
     }
 });

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
-// ✅ กำหนด API URL กลาง
-const API_URL = 'http://localhost:8001'; 
+import { API_URL } from '../config';
+import './Dashboard.css';
 
 // ----------------------------------------------------------------------
 // 1. Payment Modal Component
@@ -12,18 +11,25 @@ const PaymentModal = ({ show, onClose, onPaymentSuccess }) => {
     const [qrImage, setQrImage] = useState(null);
     const [amount, setAmount] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [errorMsg, setErrorMsg] = useState(null);
 
     useEffect(() => {
         if (show) {
             setLoading(true);
+            setErrorMsg(null);
             axios.post(`${API_URL}/generate-qr`)
                 .then(res => {
                     if (res.data.success) {
                         setQrImage(res.data.qrImage);
                         setAmount(res.data.amount);
+                    } else {
+                        setErrorMsg(res.data.message || 'สร้าง QR ไม่สำเร็จ');
                     }
                 })
-                .catch(err => console.error("QR Error", err))
+                .catch(err => {
+                    console.error("QR Error", err);
+                    setErrorMsg('ไม่สามารถติดต่อเซิร์ฟเวอร์เพื่อสร้าง QR Code');
+                })
                 .finally(() => setLoading(false));
         }
     }, [show]);
@@ -37,6 +43,8 @@ const PaymentModal = ({ show, onClose, onPaymentSuccess }) => {
                 
                 {loading ? (
                     <p style={{color: '#fff'}}>กำลังสร้าง QR Code...</p>
+                ) : errorMsg ? (
+                    <p style={{color: '#FF5252', padding: '20px 0'}}>{errorMsg}</p>
                 ) : (
                     <>
                         <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '10px', margin: '20px auto', width: 'fit-content' }}>
@@ -236,38 +244,37 @@ function Dashboard() {
     };
 
     return (
-        <div style={styles.pageContainer}>
-            {/* ✅ แก้ไข: เพิ่ม <div ...> ตรงนี้ */}
-            <div style={styles.contentWrapper}> 
+        <div className="dashboard-page">
+            <div className="dashboard-content"> 
                 
                 {/* Header Section */}
-                <header style={styles.header}>
+                <header className="dashboard-header">
                     <div>
-                        <h2 style={styles.appTitle}>Locker Service</h2>
-                        <p style={styles.welcomeText}>สวัสดี, {currentUser}</p>
+                        <h2 className="dashboard-title">Locker Service</h2>
+                        <p className="dashboard-welcome">สวัสดี, {currentUser}</p>
                     </div>
                     
                     <button 
                         onClick={handleViewProfile} 
-                        style={styles.profileButton}
+                        className="dashboard-profile-btn"
                     >
-                        <span style={{marginRight: '8px'}}>👤</span> ข้อมูลส่วนตัว
+                        <span>👤</span> ข้อมูลส่วนตัว
                     </button>
                 </header>
 
                 {/* Active Locker Section */}
                 {myLocker && (
-                    <div style={styles.activeCard}>
-                        <div style={styles.activeInfo}>
-                            <div style={styles.activeLabel}>
-                                <span style={{fontSize: '24px'}}>🔒</span> คุณกำลังใช้งาน
+                    <div className="dashboard-active-card">
+                        <div className="active-info">
+                            <div className="active-label">
+                                <span style={{fontSize: '22px'}}>🔒</span> คุณกำลังใช้งาน
                             </div>
-                            <div style={styles.activeNumber}>ตู้ {myLocker.id}</div>
+                            <div className="active-number">ตู้ {myLocker.id}</div>
                         </div>
                         
                         <button 
                             onClick={handleReturnScan}
-                            style={styles.returnButton}
+                            className="return-button"
                         >
                             สแกนหน้าเพื่อปลดล็อกตู้
                         </button>
@@ -275,32 +282,35 @@ function Dashboard() {
                 )}
                 
                 {/* Lockers Grid */}
-                <div style={styles.gridContainer}>
+                <div className="lockers-grid">
                     {Array.isArray(lockers) && lockers
                         .filter(locker => !myLocker || myLocker.id !== locker.id)
                         .sort((a, b) => a.id - b.id)
                         .map((locker) => (
-                            <div key={locker.id} style={styles.lockerCard(locker.status)}>
-                                <div style={styles.lockerHeader}>
-                                    <span style={styles.lockerId}>{locker.id}</span>
-                                    <div style={styles.statusDot(locker.status)}></div>
+                            <div 
+                                key={locker.id} 
+                                className={`locker-card ${locker.status}`}
+                            >
+                                <div className="locker-header">
+                                    <span className="locker-id">{locker.id}</span>
+                                    <div className={`status-dot ${locker.status}`}></div>
                                 </div>
 
-                                <div style={styles.lockerBody}>
+                                <div className="locker-body">
                                     {locker.status === 'available' ? (
                                         <>
-                                            <p style={styles.statusTextAvailable}>ว่าง</p>
+                                            <p className="status-text-available">ว่าง</p>
                                             <button 
                                                 onClick={() => handleBooking(locker.id)} 
-                                                style={styles.bookButton}
+                                                className="book-button"
                                             >
                                                 จอง (10฿)
                                             </button>
                                         </>
                                     ) : (
                                         <>
-                                            <p style={styles.statusTextOccupied}>ไม่ว่าง</p>
-                                            <p style={styles.ownerText}>โดย: {locker.owner}</p>
+                                            <p className="status-text-occupied">ไม่ว่าง</p>
+                                            <p className="owner-text">โดย: {locker.owner}</p>
                                         </>
                                     )}
                                 </div>
@@ -322,182 +332,7 @@ function Dashboard() {
     );
 }
 
-// ----------------------------------------------------------------------
-// ✅ แก้ไข: ลบ Router ที่ซ้อนกันออก และ Export Dashboard โดยตรง
-// ----------------------------------------------------------------------
 export default Dashboard;
-
-// ----------------------------------------------------------------------
-// Styles
-// ----------------------------------------------------------------------
-const styles = {
-    pageContainer: {
-        width: '100vw',
-        minHeight: '100vh',
-        backgroundColor: '#000000', 
-        fontFamily: "'Kanit', 'Inter', sans-serif",
-        color: '#fff',
-        boxSizing: 'border-box',
-        display: 'flex',
-        justifyContent: 'center', 
-        padding: '0', 
-        position: 'absolute', 
-        top: 0,
-        left: 0,
-        overflowX: 'hidden'
-    },
-    contentWrapper: {
-        width: '100%',
-        maxWidth: '1200px',
-        padding: '40px',
-        boxSizing: 'border-box',
-        margin: '0 auto', 
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '40px',
-        borderBottom: '1px solid #222',
-        paddingBottom: '20px'
-    },
-    appTitle: {
-        fontSize: '28px',
-        fontWeight: '700',
-        margin: 0,
-        background: 'linear-gradient(90deg, #fff, #aaa)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent'
-    },
-    welcomeText: {
-        fontSize: '16px',
-        color: '#666',
-        margin: '5px 0 0 0'
-    },
-    profileButton: {
-        backgroundColor: '#1C1C1E',
-        color: '#fff',
-        border: '1px solid #333',
-        borderRadius: '30px',
-        padding: '10px 20px',
-        fontSize: '14px',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        display: 'flex',
-        alignItems: 'center',
-        fontWeight: '500'
-    },
-    activeCard: {
-        background: 'linear-gradient(135deg, #1C1C1E 0%, #252525 100%)',
-        borderRadius: '30px',
-        padding: '40px',
-        marginBottom: '50px',
-        border: '2px solid #FFD700', 
-        boxShadow: '0 0 30px rgba(255, 215, 0, 0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '20px'
-    },
-    activeInfo: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px'
-    },
-    activeLabel: {
-        color: '#FFD700',
-        fontSize: '18px',
-        fontWeight: '600',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px'
-    },
-    activeNumber: {
-        fontSize: '60px',
-        fontWeight: '800',
-        lineHeight: 1,
-        color: '#fff'
-    },
-    returnButton: {
-        backgroundColor: '#DC3545', 
-        color: '#fff',
-        border: 'none',
-        borderRadius: '20px',
-        padding: '15px 40px',
-        fontSize: '18px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        boxShadow: '0 10px 20px rgba(220, 53, 69, 0.3)',
-        transition: 'transform 0.2s'
-    },
-    gridContainer: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 240px))',
-        gap: '25px',
-        width: '100%',
-        justifyContent: 'center',
-    },
-    lockerCard: (status) => ({
-        backgroundColor: '#1C1C1E',
-        borderRadius: '24px',
-        padding: '25px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        minHeight: '160px',
-        transition: 'transform 0.2s',
-        opacity: status === 'available' ? 1 : 0.6, 
-        border: status === 'available' ? '1px solid #333' : '1px solid #222'
-    }),
-    lockerHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start'
-    },
-    lockerId: {
-        fontSize: '32px',
-        fontWeight: '700',
-        color: '#fff'
-    },
-    statusDot: (status) => ({
-        width: '12px',
-        height: '12px',
-        borderRadius: '50%',
-        backgroundColor: status === 'available' ? '#28A745' : '#DC3545',
-        boxShadow: status === 'available' ? '0 0 10px #28A745' : 'none'
-    }),
-    lockerBody: {
-        marginTop: '15px'
-    },
-    statusTextAvailable: {
-        color: '#28A745',
-        fontSize: '14px',
-        fontWeight: '600',
-        marginBottom: '15px'
-    },
-    statusTextOccupied: {
-        color: '#DC3545',
-        fontSize: '14px',
-        fontWeight: '600',
-        marginBottom: '5px'
-    },
-    ownerText: {
-        color: '#666',
-        fontSize: '12px'
-    },
-    bookButton: {
-        width: '100%',
-        padding: '12px',
-        borderRadius: '16px',
-        border: 'none',
-        backgroundColor: '#fff',
-        color: '#000',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        transition: 'background 0.2s'
-    }
-};
 
 const modalStyles = {
     backdrop: {

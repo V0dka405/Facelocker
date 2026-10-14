@@ -3,6 +3,7 @@ import Webcam from 'react-webcam';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
+import { API_URL } from '../config';
 
 function LoginFace() {
     const webcamRef = useRef(null);
@@ -49,7 +50,7 @@ function LoginFace() {
         setStatusText("⚡ พบใบหน้า! กำลังตรวจสอบเพื่อเข้าสู่ระบบ...");
 
         try {
-            const res = await axios.post('http://localhost:8001/login-face', {
+            const res = await axios.post(`${API_URL}/login-face`, {
                 faceDescriptor: descriptor,
             });
 
@@ -99,7 +100,7 @@ function LoginFace() {
                 const detections = await faceapi
                     .detectAllFaces(
                         video, 
-                        new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.8 })
+                        new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.5 })
                     )
                     .withFaceLandmarks()
                     .withFaceDescriptors();
